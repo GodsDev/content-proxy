@@ -22,6 +22,10 @@ $useragent = (isset($_SERVER["HTTP_USER_AGENT"]))?($_SERVER["HTTP_USER_AGENT"]):
 //template předáván v GET parametru tw {xt=touch; xe=enhanced; xs=simple; ??=wml}//$template = 'touch'; //@TODO - zdynamičnit a POSTnout
 $incomingURL = $_SERVER["REQUEST_URI"];
 $url = str_replace($sourceBaseUrl, $targetBaseURL, $incomingURL);
+if(isset($_GET['tbu']) && $_GET['tbu']) {
+    $url=$targetBaseURL.$_GET['tbu'];
+}
+
 $headers = apache_request_headers();
 $referer = (isset($_SERVER["HTTP_REFERER"]))?($_SERVER["HTTP_REFERER"]):false;
 /*
