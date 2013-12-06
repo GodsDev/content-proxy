@@ -2,7 +2,7 @@
 
 /*
  * Content proxy pro http://free.gods.cz/textovky/
- * v.1.1, 131129, rejthar@gods.cz
+ * v.1.2, 131202, rejthar@gods.cz (fix slukova@mobile-partnership.cz )
  * 
  * Podporuje POST
  * Všechny původní headers předává jako X-orig-*
@@ -19,7 +19,7 @@ $sourceBaseUrl = dirname($_SERVER["PHP_SELF"]) . '/';
 //give UA & auth - get content body
 
 $useragent = $_SERVER["HTTP_USER_AGENT"]; //@TODO - přidat ochranu proti spamování a dát default hodnotu
-$template = 'touch'; //@TODO - zdynamičnit a POSTnout
+//template předáván v GET parametru tw {xt=touch; xe=enhanced; xs=simple; ??=wml}//$template = 'touch'; //@TODO - zdynamičnit a POSTnout
 $incomingURL = $_SERVER["REQUEST_URI"];
 $url = str_replace($sourceBaseUrl, $targetBaseURL, $incomingURL);
 $headers = apache_request_headers();
@@ -123,6 +123,6 @@ die($body);
 
 function outputHeaderIfSet($headerName, $headerArray) {
     if (isset($headerArray[$headerName])) {
-        header("{$headerName}: {$headerArray['$headerName']}");
+        header("{$headerName}: {$headerArray[$headerName]}");
     }
 }
