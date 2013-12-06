@@ -2,7 +2,7 @@
 
 /*
  * Content proxy pro http://free.gods.cz/textovky/
- * v.1.2, 131202, rejthar@gods.cz (fix slukova@mobile-partnership.cz )
+ * v.1.3, 131202, rejthar@gods.cz (fix slukova@mobile-partnership.cz )
  * 
  * Podporuje POST
  * Všechny původní headers předává jako X-orig-*
@@ -18,12 +18,12 @@ $sourceBaseUrl = dirname($_SERVER["PHP_SELF"]) . '/';
 //O2 - header & footer - přidávat na straně, která generuje komplet stránky
 //give UA & auth - get content body
 
-$useragent = $_SERVER["HTTP_USER_AGENT"]; //@TODO - přidat ochranu proti spamování a dát default hodnotu
+$useragent = (isset($_SERVER["HTTP_USER_AGENT"]))?($_SERVER["HTTP_USER_AGENT"]):false;
 //template předáván v GET parametru tw {xt=touch; xe=enhanced; xs=simple; ??=wml}//$template = 'touch'; //@TODO - zdynamičnit a POSTnout
 $incomingURL = $_SERVER["REQUEST_URI"];
 $url = str_replace($sourceBaseUrl, $targetBaseURL, $incomingURL);
 $headers = apache_request_headers();
-$referer = $_SERVER["HTTP_REFERER"];
+$referer = (isset($_SERVER["HTTP_REFERER"]))?($_SERVER["HTTP_REFERER"]):false;
 /*
 $excludedHeaders = array (
     'Connection',
@@ -33,11 +33,20 @@ $excludedHeaders = array (
     'Accept',
 );
 */
+//list of headers that are directly output to the client from the proxied website
+$directOutputHeaders = array (
+    'Last-Modified',
+    'ETag',
+    'Accept-Ranges',
+    'Content-Length',
+    'Vary',
+    'Content-Type',
+);
 
 //Let's retrieve the content
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $url);
-curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
+if($useragent)curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $curlTimeout);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -57,7 +66,7 @@ if(!isset($headers['X_NOKIA_MSISDN'])){
 }
 */
 foreach ($headers as $key => $value) {
-    /*if(!in_array($kex, $excludedHeaders)){
+    /*if(!in_array($key, $excludedHeaders)){
         $headersToBeSent[]=("{$key}: {$value}");
     } else {*/
         $headersToBeSent[]=("X-orig-{$key}: {$value}");
@@ -107,17 +116,18 @@ $headerArray = array();
 foreach ($headerArray0 as $key => $value) {
     $tempArray = explode(": ", $value, 2);
     if (trim($tempArray[0]) != '') {
-        $headerArray[$tempArray[0]] = is_null($tempArray[1]) ? $tempArray[0] : $tempArray[1];
+        if(isset($tempArray[1])){
+            $headerArray[$tempArray[0]] = is_null($tempArray[1]) ? $tempArray[0] : $tempArray[1];
+        } else {
+            $headerArray[$tempArray[0]] = $tempArray[0];
+        }
     }
 }
 
 //Outputs the retrieved file
-outputHeaderIfSet('Last-Modified', $headerArray);
-outputHeaderIfSet('ETag', $headerArray);
-outputHeaderIfSet('Accept-Ranges', $headerArray);
-outputHeaderIfSet('Content-Length', $headerArray);
-outputHeaderIfSet('Vary', $headerArray);
-outputHeaderIfSet('Content-Type', $headerArray);
+foreach ($directOutputHeaders as $key => $value) {
+    outputHeaderIfSet($value, $headerArray);
+}
 
 die($body);
 
