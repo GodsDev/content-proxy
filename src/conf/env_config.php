@@ -24,5 +24,5 @@ $test_env = false;
 /* content proxy timeout */
 $curlTimeout = 10; //[sec]
 
-/* targetBaseURL including trailing slash */
+/* targetBaseURL including trailing slash - target MUST by a DIRECTORY (not a web page) */
 $targetBaseURL = 'http://free.gods.cz/textovky/';
