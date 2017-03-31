@@ -1,3 +1,8 @@
+# ABANDONED
+
+Try https://github.com/GodsDev/smallproxy/ instead
+
+
 content-proxy
 =============
 PHP proxy that runs on one server (for instance for getting authentization) while proxying a website that actually runs elsewhere
